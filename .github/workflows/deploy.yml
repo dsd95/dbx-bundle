@@ -1,0 +1,76 @@
+name: Deploy Databricks Bundle
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout bundle repo
+        uses: actions/checkout@v4
+
+      - name: Download app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dbx-app-wheel
+          path: dist
+        continue-on-error: true
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate dev
+        run: databricks bundle validate -t dev
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
+
+      - name: Deploy dev
+        run: databricks bundle deploy -t dev
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
+
+      - name: Run dev job
+        run: databricks bundle run -t dev sample_job
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
+
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout bundle repo
+        uses: actions/checkout@v4
+
+      - name: Download app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dbx-app-wheel
+          path: dist
+        continue-on-error: true
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate prod
+        run: databricks bundle validate -t prod
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_PROD }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+
+      - name: Deploy prod
+        run: databricks bundle deploy -t prod
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_PROD }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+
+      - name: Run prod job
+        run: databricks bundle run -t prod sample_job
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_PROD }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_PROD }}
