@@ -11,6 +11,8 @@ variables:
     description: The catalog to use
   schema:
     description: The schema to use
+  cluster_id:
+    description: Existing cluster ID for the target workspace
 
 targets:
   dev:
@@ -21,7 +23,7 @@ targets:
     variables:
       catalog: dbx_catalog
       schema: ${workspace.current_user.short_name}
-
+      cluster_id: 0311-111431-njsnwucy
   prod:
     mode: production
     workspace:
@@ -30,6 +32,7 @@ targets:
     variables:
       catalog: dbx_catalog
       schema: prod
+      cluster_id: 0318-111523-xoo4md9u
     permissions:
       - user_name: diogo.duarte@xpandtst.onmicrosoft.com
         level: CAN_MANAGE

@@ -5,6 +5,11 @@ resources:
     sample_job:
       name: sample_job
 
+      git_source:
+        git_url: https://github.com/dsd95/dbx-app.git
+        git_provider: gitHub
+        git_branch: main
+
       parameters:
         - name: catalog
           default: ${var.catalog}
@@ -12,20 +17,12 @@ resources:
           default: ${var.schema}
 
       tasks:
-        - task_key: python_wheel_task
-          python_wheel_task:
-            package_name: dbx-app
-            entry_point: dbx-app
+        - task_key: run_python
+          spark_python_task:
+            python_file: src/dbx_app/main.py
             parameters:
               - "--catalog"
               - "${var.catalog}"
               - "--schema"
               - "${var.schema}"
-          environment_key: default
-
-      environments:
-        - environment_key: default
-          spec:
-            environment_version: "4"
-            dependencies:
-              - ../dist/*.whl
+          existing_cluster_id: ${var.cluster_id}
